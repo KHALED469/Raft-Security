@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAFT STUDIO | PRO CONSOLE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Cairo:wght@400;700&family=Noto+Sans+JP:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #ffb703; --bg: #020617; --card: #0f172a;
+            --text-main: #f1f5f9; --text-muted: #94a3b8; --border: rgba(255,183,3,0.1);
+            --glow: rgba(255, 183, 3, 0.2); --danger: #ff4d4d; --success: #00e676;
+        }
+
+        [data-theme="light"] {
+            --primary: #b45309; --bg: #f1f5f9; --card: #ffffff;
+            --text-main: #1e293b; --text-muted: #64748b; --border: #cbd5e1;
+        }
+
+        * { box-sizing: border-box; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); scroll-behavior: smooth; }
+        body { margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Cairo', 'Noto Sans JP', sans-serif; height: 100vh; overflow: hidden; }
+
+        /* --- شاشة الدخول --- */
+        #login-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+        #login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .login-card { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 24px; width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+
+        /* --- الهيدر --- */
+        header {
+            height: 70px; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); display: flex; align-items: center;
+            padding: 0 25px; justify-content: space-between; position: fixed; width: 100%; z-index: 1000;
+        }
+
+        /* --- المنيو الجانبي المطور --- */
+        #sidebar {
+            position: fixed; right: -340px; top: 0; width: 320px; height: 100%;
+            background: var(--card); border-left: 1px solid var(--border);
+            z-index: 2000; padding: 25px; display: flex; flex-direction: column;
+            overflow-y: auto; box-shadow: -10px 0 50px rgba(0,0,0,0.5);
+        }
+        #sidebar.open { right: 0; }
+        body[dir="ltr"] #sidebar { right: auto; left: -340px; border-left: none; border-right: 1px solid var(--border); }
+        body[dir="ltr"] #sidebar.open { left: 0; }
+
+        .menu-category { font-size: 11px; color: var(--primary); font-weight: 900; letter-spacing: 1.5px; margin: 20px 0 10px 10px; text-transform: uppercase; opacity: 0.8; }
+        
+        .nav-item {
+            padding: 12px 18px; margin-bottom: 5px; cursor: pointer; border-radius: 12px;
+            display: flex; align-items: center; gap: 12px; color: var(--text-muted);
+            border: 1px solid transparent; font-size: 14px;
+        }
+        .nav-item i { font-size: 18px; width: 25px; text-align: center; }
+        .nav-item:hover { background: rgba(255,183,3,0.05); color: var(--text-main); transform: translateX(-5px); }
+        .nav-item.active { background: var(--primary); color: #000; font-weight: 700; box-shadow: 0 4px 20px var(--glow); }
+
+        /* --- المحتوى --- */
+        main { padding: 100px 30px 30px; height: 100vh; overflow-y: auto; }
+        .pane { display: none; }
+        .pane.active { display: block; animation: slideUp 0.4s ease-out; }
+
+        .card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        /* جداول إدارة الباند */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: right; padding: 12px; color: var(--text-muted); font-size: 12px; border-bottom: 1px solid var(--border); }
+        td { padding: 15px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .badge-danger { background: rgba(255,77,77,0.1); color: var(--danger); }
+
+        /* أزرار الإعدادات */
+        .settings-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); }
+        .btn-opt { background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-main); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; flex: 1; }
+        .btn-opt.active { background: var(--primary); color: #000; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body data-theme="dark" dir="rtl">
+
+<div id="login-overlay">
+    <div class="login-card">
+        <h2 style="font-family:'Orbitron'; color:var(--primary)" data-i18n="logo">🔱 RAFT_STUDIO</h2>
+        
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button class="btn-opt active dark-toggle" onclick="setTheme('dark')">🌙 Dark</button>
+            <button class="btn-opt light-toggle" onclick="setTheme('light')">☀️ Light</button>
+        </div>
+
+        <select class="btn-opt lang-switcher" style="width:100%; margin-bottom:20px;" onchange="setLang(this.value)">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+            <option value="jp">日本語</option>
+        </select>
+
+        <input type="password" id="pass" placeholder="••••" style="width:100%; padding:15px; background:rgba(0,0,0,0.2); border:1px solid var(--border); color:#fff; border-radius:12px; text-align:center; margin-bottom:20px; outline:none; font-size:20px;">
+        <button onclick="unlock()" style="width:100%; padding:15px; background:var(--primary); border:none; border-radius:12px; font-weight:900; cursor:pointer; color:#000;" data-i18n="login_btn">INITIALIZE</button>
+    </div>
+</div>
+
+<header>
+    <div style="font-family:'Orbitron'; color:var(--primary); font-weight:900; font-size:20px;" data-i18n="logo">🔱 RAFT_STUDIO</div>
+    <div style="display:flex; align-items:center; gap:15px;">
+        <div style="font-size:12px; color:var(--text-muted); font-family:'JetBrains Mono'">STATUS: <span style="color:var(--success)">SECURED</span></div>
+        <div onclick="toggleSidebar()" style="cursor:pointer; font-size:26px; color:var(--primary)">☰</div>
+    </div>
+</header>
+
+<nav id="sidebar">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span style="font-family:'Orbitron'; color:var(--primary); font-weight:900;">DASHBOARD v3.5</span>
+        <span onclick="toggleSidebar()" style="cursor:pointer; font-size:30px;">×</span>
+    </div>
+
+    <div class="menu-category" data-i18n="cat_main">الإدارة العامة</div>
+    <div class="nav-item active" onclick="navTo('dash', this)" data-i18n="nav_dash">📊 الرؤية العامة</div>
+    <div class="nav-item" onclick="navTo('servers', this)" data-i18n="nav_servers">🌐 السيرفرات المتصلة</div>
+    <div class="nav-item" onclick="navTo('term', this)" data-i18n="nav_term">📟 كونسول الأوامر</div>
+
+    <div class="menu-category" data-i18n="cat_security">الأمان والحماية</div>
+    <div class="nav-item" onclick="navTo('bans', this)" data-i18n="nav_bans">🚫 قائمة الباند (Ban List)</div>
+    <div class="nav-item" onclick="navTo('license', this)" data-i18n="nav_license">🔑 نظام التراخيص</div>
+
+    <div class="menu-category" data-i18n="cat_dev">البرمجة والمودات</div>
+    <div class="nav-item" onclick="navTo('mods', this)" data-i18n="nav_mods">⚙️ إدارة الـ Addons</div>
+    <div class="nav-item" onclick="navTo('webhooks', this)" data-i18n="nav_webhooks">🔗 Discord Webhooks</div>
+
+    <div class="settings-footer">
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <button class="btn-opt dark-toggle active" onclick="setTheme('dark')">🌙</button>
+            <button class="btn-opt light-toggle" onclick="setTheme('light')">☀️</button>
+        </div>
+        <select class="btn-opt lang-switcher" onchange="setLang(this.value)" style="width:100%">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+            <option value="jp">日本語</option>
+        </select>
+    </div>
+</nav>
+
+<main>
+    <section id="dash" class="pane active">
+        <h2 data-i18n="dash_welcome">مرحباً بك يا خالد</h2>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
+            <div class="card" style="border-right: 4px solid var(--primary)">
+                <p data-i18n="stat_players">إجمالي المشتركين</p>
+                <h1 style="font-family:'Orbitron'">1,542</h1>
+            </div>
+            <div class="card" style="border-right: 4px solid var(--success)">
+                <p>Addons Active</p>
+                <h1 style="font-family:'Orbitron'">12</h1>
+            </div>
+        </div>
+    </section>
+
+    <section id="bans" class="pane">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 data-i18n="nav_bans">قائمة الحظر</h2>
+            <button class="btn-opt" style="background:var(--danger); color:#000; border:none; padding:8px 20px; font-weight:bold;">+ حظر جديد</button>
+        </div>
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>المستخدم</th>
+                        <th>السبب</th>
+                        <th>HWID / IP</th>
+                        <th>الحالة</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>User_1290</td>
+                        <td>Attempted Bypass</td>
+                        <td><code style="color:var(--primary)">44A2-99XX-11...</code></td>
+                        <td><span class="badge badge-danger">Permanent</span></td>
+                        <td><button class="btn-opt" style="padding:4px 10px; font-size:10px;">فك الحظر</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="servers" class="pane">
+        <h2 data-i18n="nav_servers">إدارة السيرفرات</h2>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between;">
+                <strong>RAFT_ALPHA_PRO</strong>
+                <span style="color:var(--success)">● Online</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="term" class="pane">
+        <h2 data-i18n="nav_term">Console Output</h2>
+        <div class="card" style="background:#000; height:400px; font-family:'JetBrains Mono'; color:var(--success); overflow-y:auto; padding:20px;">
+            > Raft System Secured.<br>
+            > Waiting for packets...
+        </div>
+    </section>
+
+    <section id="license" class="pane"><h2>نظام التراخيص (Licenses)</h2><div class="card">تحقق من أكواد التفعيل هنا..</div></section>
+    <section id="webhooks" class="pane"><h2>Discord Webhooks</h2><div class="card">إعدادات الإشعارات التلقائية..</div></section>
+    <section id="mods" class="pane"><h2>Addons Control</h2><div class="card">إدارة ملفات المودات..</div></section>
+</main>
+
+<script>
+    const translations = {
+        ar: {
+            logo: "🔱 استوديو رافت",
+            login_btn: "تشغيل النظام",
+            cat_main: "الإدارة العامة",
+            cat_security: "الأمان والحماية",
+            cat_dev: "البرمجة والمودات",
+            nav_dash: "📊 الرؤية العامة",
+            nav_servers: "🌐 السيرفرات المتصلة",
+            nav_term: "📟 كونسول الأوامر",
+            nav_bans: "🚫 قائمة الباند",
+            nav_license: "🔑 التراخيص",
+            nav_mods: "⚙️ المودات",
+            nav_webhooks: "🔗 الويبهوك",
+            dash_welcome: "مرحباً بك يا خالد في استوديو رافت",
+            stat_players: "إجمالي المشتركين"
+        },
+        en: {
+            logo: "🔱 RAFT_STUDIO",
+            login_btn: "INITIALIZE",
+            cat_main: "MAIN MGMT",
+            cat_security: "SECURITY",
+            cat_dev: "DEVELOPMENT",
+            nav_dash: "📊 DASHBOARD",
+            nav_servers: "🌐 SERVERS",
+            nav_term: "📟 TERMINAL",
+            nav_bans: "🚫 BAN LIST",
+            nav_license: "🔑 LICENSES",
+            nav_mods: "⚙️ ADDONS",
+            nav_webhooks: "🔗 WEBHOOKS",
+            dash_welcome: "Welcome back, KHALED",
+            stat_players: "TOTAL USERS"
+        },
+        jp: {
+            logo: "🔱 ラフト・スタジオ",
+            login_btn: "システム起動",
+            cat_main: "一般管理",
+            cat_security: "セキュリティ",
+            cat_dev: "開発管理",
+            nav_dash: "📊 ダッシュボード",
+            nav_servers: "🌐 サーバー",
+            nav_term: "📟 ターミナル",
+            nav_bans: "🚫 禁止リスト",
+            nav_license: "🔑 ライセンス",
+            nav_mods: "⚙️ モッド",
+            nav_webhooks: "🔗 ウェブフック",
+            dash_welcome: "おかえりなさい、カレドさん",
+            stat_players: "総ユーザー数"
+        }
+    };
+
+    function setTheme(m) {
+        document.body.setAttribute('data-theme', m);
+        document.querySelectorAll('.dark-toggle').forEach(b => b.classList.toggle('active', m === 'dark'));
+        document.querySelectorAll('.light-toggle').forEach(b => b.classList.toggle('active', m === 'light'));
+    }
+
+    function setLang(lang) {
+        document.body.dir = (lang === 'ar' ? 'rtl' : 'ltr');
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            el.innerText = translations[lang][el.getAttribute('data-i18n')];
+        });
+        document.querySelectorAll('.lang-switcher').forEach(s => s.value = lang);
+    }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+    function unlock() {
+        if(document.getElementById('pass').value === "77") {
+            document.getElementById('login-overlay').classList.add('hidden');
+        } else { alert("ACCESS DENIED"); }
+    }
+
+    function navTo(id, el) {
+        document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+        if(window.innerWidth < 1000) toggleSidebar();
+    }
+</script>
+</body>
+</html>
