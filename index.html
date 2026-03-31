@@ -3,290 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAFT STUDIO | PRO CONSOLE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Cairo:wght@400;700&family=Noto+Sans+JP:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-
+    <title>RAFT INFINITE MONOLITH | ULTIMATE SYSTEM V50</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Cairo:wght@300;600;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --primary: #ffb703; --bg: #020617; --card: #0f172a;
-            --text-main: #f1f5f9; --text-muted: #94a3b8; --border: rgba(255,183,3,0.1);
-            --glow: rgba(255, 183, 3, 0.2); --danger: #ff4d4d; --success: #00e676;
+            --gold: #d4af37;
+            --gold-dark: #aa8c2c;
+            --gold-glow: rgba(212, 175, 55, 0.3);
+            --bg: #020205;
+            --glass: rgba(10, 10, 18, 0.98);
+            --border: rgba(212, 175, 55, 0.2);
+            --sidebar-w: 360px;
+            --accent: #4285f4;
+            --seif-color: #00ffcc;
         }
 
-        [data-theme="light"] {
-            --primary: #b45309; --bg: #f1f5f9; --card: #ffffff;
-            --text-main: #1e293b; --text-muted: #64748b; --border: #cbd5e1;
+        * { box-sizing: border-box; transition: 0.4s cubic-bezier(0.1, 0.9, 0.1, 1); }
+        body { background: var(--bg); color: #fff; font-family: 'Cairo', sans-serif; margin: 0; height: 100vh; overflow: hidden; }
+
+        /* 🔱 بوابة العبور (Login) */
+        #auth-gate {
+            position: fixed; inset: 0; z-index: 10000; background: radial-gradient(circle at center, #0a0a1f 0%, #000 100%);
+            display: flex; justify-content: center; align-items: center;
         }
-
-        * { box-sizing: border-box; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); scroll-behavior: smooth; }
-        body { margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Cairo', 'Noto Sans JP', sans-serif; height: 100vh; overflow: hidden; }
-
-        /* --- شاشة الدخول --- */
-        #login-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; }
-        #login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .login-card { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 24px; width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
-
-        /* --- الهيدر --- */
-        header {
-            height: 70px; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border); display: flex; align-items: center;
-            padding: 0 25px; justify-content: space-between; position: fixed; width: 100%; z-index: 1000;
+        .vault-container {
+            width: 600px; padding: 70px; background: var(--glass); border: 2px solid var(--border);
+            border-radius: 70px; text-align: center; backdrop-filter: blur(60px);
+            box-shadow: 0 0 150px #000, 0 0 40px var(--gold-glow);
         }
-
-        /* --- المنيو الجانبي المطور --- */
-        #sidebar {
-            position: fixed; right: -340px; top: 0; width: 320px; height: 100%;
-            background: var(--card); border-left: 1px solid var(--border);
-            z-index: 2000; padding: 25px; display: flex; flex-direction: column;
-            overflow-y: auto; box-shadow: -10px 0 50px rgba(0,0,0,0.5);
+        .profile-selector { display: flex; justify-content: center; gap: 30px; margin: 50px 0; }
+        .p-node { 
+            width: 100px; height: 100px; border-radius: 30px; border: 2px solid var(--border);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 35px; opacity: 0.3;
         }
-        #sidebar.open { right: 0; }
-        body[dir="ltr"] #sidebar { right: auto; left: -340px; border-left: none; border-right: 1px solid var(--border); }
-        body[dir="ltr"] #sidebar.open { left: 0; }
+        .p-node.active { opacity: 1; border-color: var(--gold); background: rgba(212,175,55,0.15); transform: scale(1.1) translateY(-15px); box-shadow: 0 15px 40px var(--gold-glow); }
 
-        .menu-category { font-size: 11px; color: var(--primary); font-weight: 900; letter-spacing: 1.5px; margin: 20px 0 10px 10px; text-transform: uppercase; opacity: 0.8; }
-        
-        .nav-item {
-            padding: 12px 18px; margin-bottom: 5px; cursor: pointer; border-radius: 12px;
-            display: flex; align-items: center; gap: 12px; color: var(--text-muted);
-            border: 1px solid transparent; font-size: 14px;
+        /* 🔱 الهيكل الإمبراطوري */
+        #monolith-os { display: none; width: 100%; height: 100%; flex-direction: row; }
+
+        /* Sidebar المطور */
+        aside {
+            width: var(--sidebar-w); background: #05050a; border-left: 2px solid var(--border);
+            padding: 50px 30px; display: flex; flex-direction: column; gap: 15px; z-index: 100;
         }
-        .nav-item i { font-size: 18px; width: 25px; text-align: center; }
-        .nav-item:hover { background: rgba(255,183,3,0.05); color: var(--text-main); transform: translateX(-5px); }
-        .nav-item.active { background: var(--primary); color: #000; font-weight: 700; box-shadow: 0 4px 20px var(--glow); }
+        .os-brand { text-align: center; margin-bottom: 60px; }
+        .os-logo { font-family: 'Orbitron'; font-size: 42px; font-weight: 900; background: linear-gradient(135deg, #fff, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px var(--gold-glow)); }
 
-        /* --- المحتوى --- */
-        main { padding: 100px 30px 30px; height: 100vh; overflow-y: auto; }
-        .pane { display: none; }
-        .pane.active { display: block; animation: slideUp 0.4s ease-out; }
+        .nav-group { margin-bottom: 20px; }
+        .nav-label { font-size: 11px; color: var(--gold); letter-spacing: 3px; font-weight: 900; margin-bottom: 15px; display: block; opacity: 0.6; }
 
-        .card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        
-        /* جداول إدارة الباند */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: right; padding: 12px; color: var(--text-muted); font-size: 12px; border-bottom: 1px solid var(--border); }
-        td { padding: 15px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-        .badge-danger { background: rgba(255,77,77,0.1); color: var(--danger); }
+        .nav-btn {
+            padding: 20px 25px; border-radius: 25px; display: flex; align-items: center; gap: 20px;
+            cursor: pointer; color: rgba(255,255,255,0.4); font-weight: 700; border: 1px solid transparent;
+        }
+        .nav-btn i { font-size: 24px; color: var(--gold); width: 35px; text-align: center; }
+        .nav-btn:hover, .nav-btn.active { background: rgba(212,175,55,0.1); color: #fff; border-color: var(--border); transform: translateX(-12px); }
 
-        /* أزرار الإعدادات */
-        .settings-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); }
-        .btn-opt { background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-main); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; flex: 1; }
-        .btn-opt.active { background: var(--primary); color: #000; }
+        /* Main View */
+        main { flex: 1; display: flex; flex-direction: column; position: relative; background: url('https://www.transparenttextures.com/patterns/dark-matter.png'); }
+        header { padding: 35px 60px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.5); }
+        .status-pill { padding: 10px 20px; border-radius: 50px; background: rgba(0,255,204,0.1); border: 1px solid #00ffcc; color: #00ffcc; font-size: 12px; font-weight: 900; }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Content Pages */
+        .content-area { flex: 1; padding: 60px; overflow-y: auto; scroll-behavior: smooth; }
+        .p-view { display: none; animation: slideIn 0.7s ease; }
+        .p-view.active { display: block; }
+
+        /* 🔱 نظام اللوق (The Eternal Console) */
+        #eternal-console {
+            height: 250px; background: rgba(0,0,0,0.98); border-top: 2px solid var(--border);
+            padding: 25px; overflow-y: auto; font-family: 'Fira Code', monospace; font-size: 13px; color: #777;
+        }
+        .log-item { margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 5px; }
+        .log-ts { color: var(--gold); margin-right: 10px; }
+        .log-usr { color: var(--accent); font-weight: bold; }
+        .log-txt-success { color: #00ffcc; }
+        .log-txt-error { color: #ff4b2b; }
+
+        /* Gemini Interface */
+        .Raft-Ai-shell { height: 700px; background: var(--glass); border: 1px solid var(--border); border-radius: 50px; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-stream { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; }
+        .bubble { padding: 22px 35px; border-radius: 35px; max-width: 80%; font-size: 19px; line-height: 1.8; }
+        .bubble.ai { background: rgba(255,255,255,0.03); border-right: 5px solid var(--accent); align-self: flex-start; }
+        .bubble.user { background: var(--gold); color: #000; font-weight: 900; align-self: flex-end; }
+
+        /* 🔱 جداول البيانات المتقدمة */
+        .data-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+        .stat-box { background: var(--glass); border: 1px solid var(--border); padding: 40px; border-radius: 45px; text-align: center; }
+        .stat-box i { font-size: 50px; color: var(--gold); margin-bottom: 25px; }
+        .stat-num { font-family: 'Orbitron'; font-size: 45px; font-weight: 900; margin-top: 15px; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
     </style>
 </head>
-<body data-theme="dark" dir="rtl">
+<body>
 
-<div id="login-overlay">
-    <div class="login-card">
-        <h2 style="font-family:'Orbitron'; color:var(--primary)" data-i18n="logo">🔱 RAFT_STUDIO</h2>
-        
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <button class="btn-opt active dark-toggle" onclick="setTheme('dark')">🌙 Dark</button>
-            <button class="btn-opt light-toggle" onclick="setTheme('light')">☀️ Light</button>
+<div id="auth-gate">
+    <div class="vault-container">
+        <h1 style="font-family:'Orbitron'; letter-spacing:8px; font-size:40px;">RAFT CORE</h1>
+        <div class="profile-selector">
+            <div class="p-node active" id="u-khaled" onclick="setProfile('khaled')"><i class="fa-solid fa-crown"></i></div>
+            <div class="p-node" id="u-ibrahim" onclick="setProfile('ibrahim')"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="p-node" id="u-seif" onclick="setProfile('seif')"><i class="fa-solid fa-bolt"></i></div>
         </div>
-
-        <select class="btn-opt lang-switcher" style="width:100%; margin-bottom:20px;" onchange="setLang(this.value)">
-            <option value="ar">العربية</option>
-            <option value="en">English</option>
-            <option value="jp">日本語</option>
-        </select>
-
-        <input type="password" id="pass" placeholder="••••" style="width:100%; padding:15px; background:rgba(0,0,0,0.2); border:1px solid var(--border); color:#fff; border-radius:12px; text-align:center; margin-bottom:20px; outline:none; font-size:20px;">
-        <button onclick="unlock()" style="width:100%; padding:15px; background:var(--primary); border:none; border-radius:12px; font-weight:900; cursor:pointer; color:#000;" data-i18n="login_btn">INITIALIZE</button>
+        <h2 id="p-label" style="color: var(--gold); margin-bottom: 40px;">المؤسس خالد الحربي (ROOT)</h2>
+        <input type="password" id="p-key" style="width:100%; padding:25px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:25px; color:#fff; text-align:center; font-size:24px; margin-bottom:40px;" placeholder="أدخل مفتاح التشفير">
+        <button onclick="boot()" style="width:100%; padding:25px; background:var(--gold); color:#000; border:none; border-radius:25px; font-weight:900; font-family:'Orbitron'; cursor:pointer; font-size:20px; letter-spacing:3px;">EXECUTE BOOT SEQUENCE</button>
     </div>
 </div>
 
-<header>
-    <div style="font-family:'Orbitron'; color:var(--primary); font-weight:900; font-size:20px;" data-i18n="logo">🔱 RAFT_STUDIO</div>
-    <div style="display:flex; align-items:center; gap:15px;">
-        <div style="font-size:12px; color:var(--text-muted); font-family:'JetBrains Mono'">STATUS: <span style="color:var(--success)">SECURED</span></div>
-        <div onclick="toggleSidebar()" style="cursor:pointer; font-size:26px; color:var(--primary)">☰</div>
-    </div>
-</header>
-
-<nav id="sidebar">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span style="font-family:'Orbitron'; color:var(--primary); font-weight:900;">DASHBOARD v3.5</span>
-        <span onclick="toggleSidebar()" style="cursor:pointer; font-size:30px;">×</span>
-    </div>
-
-    <div class="menu-category" data-i18n="cat_main">الإدارة العامة</div>
-    <div class="nav-item active" onclick="navTo('dash', this)" data-i18n="nav_dash">📊 الرؤية العامة</div>
-    <div class="nav-item" onclick="navTo('servers', this)" data-i18n="nav_servers">🌐 السيرفرات المتصلة</div>
-    <div class="nav-item" onclick="navTo('term', this)" data-i18n="nav_term">📟 كونسول الأوامر</div>
-
-    <div class="menu-category" data-i18n="cat_security">الأمان والحماية</div>
-    <div class="nav-item" onclick="navTo('bans', this)" data-i18n="nav_bans">🚫 قائمة الباند (Ban List)</div>
-    <div class="nav-item" onclick="navTo('license', this)" data-i18n="nav_license">🔑 نظام التراخيص</div>
-
-    <div class="menu-category" data-i18n="cat_dev">البرمجة والمودات</div>
-    <div class="nav-item" onclick="navTo('mods', this)" data-i18n="nav_mods">⚙️ إدارة الـ Addons</div>
-    <div class="nav-item" onclick="navTo('webhooks', this)" data-i18n="nav_webhooks">🔗 Discord Webhooks</div>
-
-    <div class="settings-footer">
-        <div style="display:flex; gap:8px; margin-bottom:10px;">
-            <button class="btn-opt dark-toggle active" onclick="setTheme('dark')">🌙</button>
-            <button class="btn-opt light-toggle" onclick="setTheme('light')">☀️</button>
+<div id="monolith-os">
+    <aside>
+        <div class="os-brand"><div class="os-logo">RAFT_OS</div></div>
+        
+        <div class="nav-group">
+            <span class="nav-label">الذكاء والتحليل</span>
+            <div class="nav-btn active" onclick="nav('ai')"><i class="fa-solid fa-brain-circuit"></i> نواة Raft Ai</div>
+            <div class="nav-btn" onclick="nav('dash')"><i class="fa-solid fa-tower-observation"></i> غرفة العمليات</div>
         </div>
-        <select class="btn-opt lang-switcher" onchange="setLang(this.value)" style="width:100%">
-            <option value="ar">العربية</option>
-            <option value="en">English</option>
-            <option value="jp">日本語</option>
-        </select>
-    </div>
-</nav>
 
-<main>
-    <section id="dash" class="pane active">
-        <h2 data-i18n="dash_welcome">مرحباً بك يا خالد</h2>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
-            <div class="card" style="border-right: 4px solid var(--primary)">
-                <p data-i18n="stat_players">إجمالي المشتركين</p>
-                <h1 style="font-family:'Orbitron'">1,542</h1>
+        <div class="nav-group">
+            <span class="nav-label">مشاريع RAFT STUDIO</span>
+            <div class="nav-btn" onclick="nav('mods')"><i class="fa-solid fa-box-open"></i> مستودع المودات</div>
+            <div class="nav-btn" onclick="nav('code')"><i class="fa-solid fa-code-merge"></i> محرر الأكواد</div>
+        </div>
+
+        <div id="staff-section" class="nav-group">
+            <span class="nav-label">الإدارة والعلاقات</span>
+            <div class="nav-btn" onclick="nav('staff')"><i class="fa-solid fa-users-viewfinder"></i> إدارة الفريق</div>
+            <div class="nav-btn" onclick="nav('finance')"><i class="fa-solid fa-wallet"></i> الخزينة المركزية</div>
+        </div>
+
+        <div class="nav-group">
+            <span class="nav-label">الأمن والبيانات</span>
+            <div class="nav-btn" onclick="nav('sec')"><i class="fa-solid fa-user-lock"></i> بروتوكول الحماية</div>
+            <div class="nav-btn" onclick="nav('db')"><i class="fa-solid fa-database"></i> الأرشيف السحابي</div>
+        </div>
+        
+        <div class="nav-btn" style="margin-top:auto; color:#ff4b2b;" onclick="location.reload()"><i class="fa-solid fa-power-off"></i> قطع الاتصال</div>
+    </aside>
+
+    <main>
+        <header>
+            <div id="header-rank" style="font-weight:900; font-size:22px; color:var(--gold); border-right:4px solid var(--gold); padding-right:20px;">GOD_MODE ACTIVE: KHALED</div>
+            <div id="live-clock" style="font-family:'Orbitron'; font-size:32px; font-weight:900; letter-spacing:5px;">00:00:00</div>
+            <div style="display:flex; gap:30px; align-items:center;">
+                <div class="status-pill">CONNECTED TO CORE</div>
+                <i class="fa-solid fa-satellite-dish" style="color:#00ffcc; font-size:25px;"></i>
             </div>
-            <div class="card" style="border-right: 4px solid var(--success)">
-                <p>Addons Active</p>
-                <h1 style="font-family:'Orbitron'">12</h1>
-            </div>
-        </div>
-    </section>
+        </header>
 
-    <section id="bans" class="pane">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 data-i18n="nav_bans">قائمة الحظر</h2>
-            <button class="btn-opt" style="background:var(--danger); color:#000; border:none; padding:8px 20px; font-weight:bold;">+ حظر جديد</button>
-        </div>
-        <div class="card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>المستخدم</th>
-                        <th>السبب</th>
-                        <th>HWID / IP</th>
-                        <th>الحالة</th>
-                        <th>الإجراء</th>
+        <div class="content-area">
+            
+            <div id="p-ai" class="p-view active">
+                <div class="Raft-Ai-shell">
+                    <div class="chat-stream" id="chat-out">
+                        <div class="bubble ai">مرحباً بك يا خالد في النسخة V50. تم تفعيل نظام المونوليث الكامل. كيف يمكنني مساعدتك في مشاريع Raft Studio اليوم؟</div>
+                    </div>
+                    <div style="padding:35px; display:flex; gap:20px; background:rgba(0,0,0,0.4);">
+                        <input type="text" id="chat-in" style="flex:1; padding:25px; background:#000; border:1px solid var(--border); border-radius:25px; color:#fff; font-size:18px;" placeholder="اطلب كود جافا أو استفسار برمجي...">
+                        <button onclick="ask()" style="width:100px; background:var(--gold); border:none; border-radius:25px; cursor:pointer; font-size:30px;"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="p-dash" class="p-view">
+                <h1 style="font-family:'Orbitron'; margin-bottom:50px;">مركز البيانات الاستراتيجي</h1>
+                <div class="data-grid">
+                    <div class="stat-box"><i class="fa-solid fa-users"></i><p>المستخدمين النشطين</p><div class="stat-num">0</div></div>
+                    <div class="stat-box"><i class="fa-solid fa-bolt-lightning"></i><p>سرعة الاستجابة</p><div class="stat-num">12ms</div></div>
+                    <div class="stat-box"><i class="fa-solid fa-dollar-sign"></i><p>إيرادات الاستوديو</p><div class="stat-num">0</div></div>
+                    <div class="stat-box"><i class="fa-solid fa-shield-check"></i><p>الهجمات المتصدى لها</p><div class="stat-num">0</div></div>
+                </div>
+            </div>
+
+            <div id="p-mods" class="p-view">
+                <h1>مشاريع المودات الحالية (Minecraft 1.16.5)</h1>
+                <div style="background:var(--glass); border:1px solid var(--border); border-radius:40px; padding:40px;">
+                    <div style="padding:20px; border-bottom:1px solid var(--border);">🚀 Raft  Addon (v1.0) - <span style="color:#00ffcc;">Online</span></div>
+                    <div style="padding:20px; border-bottom:1px solid var(--border);">🏹 HunterXX Mod (v0.5) - <span style="color:var(--gold);">Testing</span></div>
+                    <div style="padding:20px;">👁️ Hunter Limter (v0.0) - <span style="color:#ff4b2b;">Development</span></div>
+                </div>
+            </div>
+
+            <div id="p-staff" class="p-view">
+                <h1>إدارة الطاقم الإداري</h1>
+                <table style="width:100%; text-align:right; border-collapse:collapse;">
+                    <tr style="border-bottom:2px solid var(--gold);">
+                        <th style="padding:20px;">الاسم</th><th style="padding:20px;">الرتبة</th><th style="padding:20px;">الحالة</th>
                     </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>User_1290</td>
-                        <td>Attempted Bypass</td>
-                        <td><code style="color:var(--primary)">44A2-99XX-11...</code></td>
-                        <td><span class="badge badge-danger">Permanent</span></td>
-                        <td><button class="btn-opt" style="padding:4px 10px; font-size:10px;">فك الحظر</button></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section id="servers" class="pane">
-        <h2 data-i18n="nav_servers">إدارة السيرفرات</h2>
-        <div class="card">
-            <div style="display:flex; justify-content:space-between;">
-                <strong>RAFT_ALPHA_PRO</strong>
-                <span style="color:var(--success)">● Online</span>
+                    <tr><td style="padding:20px;">خالد</td><td style="padding:20px;">المؤسس</td><td style="padding:20px; color:#00ffcc;">نشط الآن</td></tr>
+                    <tr><td style="padding:20px;">إبراهيم</td><td style="padding:20px;">نائب المؤسس</td><td style="padding:20px; color:#00ffcc;">نشط الآن</td></tr>
+                    <tr><td style="padding:20px;">سيف</td><td style="padding:20px;">الواسطة (VIP)</td><td style="padding:20px; color:#00ffcc;">نشط الآن</td></tr>
+                </table>
             </div>
-        </div>
-    </section>
 
-    <section id="term" class="pane">
-        <h2 data-i18n="nav_term">Console Output</h2>
-        <div class="card" style="background:#000; height:400px; font-family:'JetBrains Mono'; color:var(--success); overflow-y:auto; padding:20px;">
-            > Raft System Secured.<br>
-            > Waiting for packets...
         </div>
-    </section>
 
-    <section id="license" class="pane"><h2>نظام التراخيص (Licenses)</h2><div class="card">تحقق من أكواد التفعيل هنا..</div></section>
-    <section id="webhooks" class="pane"><h2>Discord Webhooks</h2><div class="card">إعدادات الإشعارات التلقائية..</div></section>
-    <section id="mods" class="pane"><h2>Addons Control</h2><div class="card">إدارة ملفات المودات..</div></section>
-</main>
+        <div id="eternal-console"></div>
+    </main>
+</div>
 
 <script>
-    const translations = {
-        ar: {
-            logo: "🔱 استوديو رافت",
-            login_btn: "تشغيل النظام",
-            cat_main: "الإدارة العامة",
-            cat_security: "الأمان والحماية",
-            cat_dev: "البرمجة والمودات",
-            nav_dash: "📊 الرؤية العامة",
-            nav_servers: "🌐 السيرفرات المتصلة",
-            nav_term: "📟 كونسول الأوامر",
-            nav_bans: "🚫 قائمة الباند",
-            nav_license: "🔑 التراخيص",
-            nav_mods: "⚙️ المودات",
-            nav_webhooks: "🔗 الويبهوك",
-            dash_welcome: "مرحباً بك يا خالد في استوديو رافت",
-            stat_players: "إجمالي المشتركين"
-        },
-        en: {
-            logo: "🔱 RAFT_STUDIO",
-            login_btn: "INITIALIZE",
-            cat_main: "MAIN MGMT",
-            cat_security: "SECURITY",
-            cat_dev: "DEVELOPMENT",
-            nav_dash: "📊 DASHBOARD",
-            nav_servers: "🌐 SERVERS",
-            nav_term: "📟 TERMINAL",
-            nav_bans: "🚫 BAN LIST",
-            nav_license: "🔑 LICENSES",
-            nav_mods: "⚙️ ADDONS",
-            nav_webhooks: "🔗 WEBHOOKS",
-            dash_welcome: "Welcome back, KHALED",
-            stat_players: "TOTAL USERS"
-        },
-        jp: {
-            logo: "🔱 ラフト・スタジオ",
-            login_btn: "システム起動",
-            cat_main: "一般管理",
-            cat_security: "セキュリティ",
-            cat_dev: "開発管理",
-            nav_dash: "📊 ダッシュボード",
-            nav_servers: "🌐 サーバー",
-            nav_term: "📟 ターミナル",
-            nav_bans: "🚫 禁止リスト",
-            nav_license: "🔑 ライセンス",
-            nav_mods: "⚙️ モッド",
-            nav_webhooks: "🔗 ウェブフック",
-            dash_welcome: "おかえりなさい、カレドさん",
-            stat_players: "総ユーザー数"
-        }
+    let user = 'khaled';
+    const profiles = {
+        khaled: { name: 'المؤسس خالد الحربي', rank: 'GOD_MODE: ROOT', pass: 'K567123', color: '#d4af37' },
+        ibrahim: { name: 'إبراهيم', rank: 'VICE PRESIDENT', pass: 'I445656', color: '#d4af37' },
+        seif: { name: 'سيف', rank: 'ELITE RELATIVE (الواسطة)', pass: 'S123789', color: '#d4af37' }
     };
 
-    function setTheme(m) {
-        document.body.setAttribute('data-theme', m);
-        document.querySelectorAll('.dark-toggle').forEach(b => b.classList.toggle('active', m === 'dark'));
-        document.querySelectorAll('.light-toggle').forEach(b => b.classList.toggle('active', m === 'light'));
+    function log(msg, type='success') {
+        const console = document.getElementById('eternal-console');
+        const ts = new Date().toLocaleTimeString('en-GB') + "." + new Date().getMilliseconds();
+        const color = type === 'success' ? 'log-txt-success' : 'log-txt-error';
+        console.innerHTML += `<div class="log-item"><span class="log-ts">[${ts}]</span> <span class="log-usr">[${user.toUpperCase()}_SYS]</span>: <span class="${color}">${msg}</span></div>`;
+        console.scrollTop = console.scrollHeight;
     }
 
-    function setLang(lang) {
-        document.body.dir = (lang === 'ar' ? 'rtl' : 'ltr');
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            el.innerText = translations[lang][el.getAttribute('data-i18n')];
-        });
-        document.querySelectorAll('.lang-switcher').forEach(s => s.value = lang);
+    function setProfile(p) {
+        user = p;
+        document.querySelectorAll('.p-node').forEach(n => n.classList.remove('active'));
+        document.getElementById('u-' + p).classList.add('active');
+        document.getElementById('p-label').innerText = profiles[p].name + " (" + profiles[p].rank + ")";
+        log("تم تبديل ملف التعريف إلى: " + profiles[p].name);
     }
 
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-
-    function unlock() {
-        if(document.getElementById('pass').value === "77") {
-            document.getElementById('login-overlay').classList.add('hidden');
-        } else { alert("ACCESS DENIED"); }
+    function boot() {
+        const pass = document.getElementById('p-key').value;
+        if(pass === profiles[user].pass) {
+            log("جاري كسر التشفير السيادي...");
+            setTimeout(() => {
+                document.getElementById('auth-gate').style.display = 'none';
+                document.getElementById('monolith-os').style.display = 'flex';
+                applySettings();
+                log("تم تفعيل نظام المونوليث بنجاح. مرحباً " + profiles[user].name);
+            }, 1200);
+        } else {
+            alert("⚠️ المفتاح غير صحيح!");
+            log("محاولة دخول فاشلة من مصدر غير معروف!", 'error');
+        }
     }
 
-    function navTo(id, el) {
-        document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
-        if(window.innerWidth < 1000) toggleSidebar();
+    function applySettings() {
+        const p = profiles[user];
+        document.documentElement.style.setProperty('--gold', p.color);
+        document.getElementById('header-rank').innerText = p.rank + ": " + user.toUpperCase();
+        
+        if(user === 'seif') {
+            document.getElementById('staff-section').style.display = 'none';
+            log("تنبيه: تم تفعيل وضع الواسطة. تم رفع كافة القيود الإدارية.");
+        }
     }
+
+    function nav(id) {
+        document.querySelectorAll('.p-view').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        const target = document.getElementById('p-' + id);
+        if(target) {
+            target.classList.add('active');
+            log("تم الدخول إلى وحدة: " + id.toUpperCase());
+        } else {
+            log("تنبيه: الوحدة " + id.toUpperCase() + " تعمل في وضع الخلفية المستقر.", 'success');
+        }
+        event.currentTarget.classList.add('active');
+    }
+
+    function ask() {
+        const inp = document.getElementById('chat-in');
+        const out = document.getElementById('chat-out');
+        if(!inp.value) return;
+
+        out.innerHTML += `<div class="bubble user">${inp.value}</div>`;
+        const val = inp.value;
+        inp.value = '';
+        log("إرسال استعلام إلى Raft Ai: " + val);
+
+        setTimeout(() => {
+            let reply = "تم تحليل البيانات بنجاح يا " + profiles[user].name;
+            if(user === 'seif') reply = "تم يا سيف ! طلباتك أوامر ونفذناها فوراً.";
+            else if(val.includes('كود')) reply = "تفضل كود الجافا المطلوب: \n public class RaftMonolith { ... }";
+            
+            out.innerHTML += `<div class="bubble ai">${reply}</div>`;
+            out.scrollTop = out.scrollHeight;
+            log("رد النظام: " + reply);
+        }, 1000);
+    }
+
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
+    setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
+
+    log("نظام RAFT_OS V50 جاهز للعمل.");
 </script>
+
 </body>
 </html>
